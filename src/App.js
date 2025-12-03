@@ -264,16 +264,18 @@ export default function App() {
           { id: `assistant-${Date.now()}`, role: "assistant", content: response.reply },
         ]);
       }
-      if (response.toolRequest) {
-        const tool = response.toolRequest;
-        const toolMsg = {
-          id: `tool-${Date.now()}`,
-          role: "assistant",
-          content: `Requesting "${tool.title}" as a ${tool.mediaType === "tv" ? "TV Show" : "Movie"} (${tool.seasons || "full"} seasons) now...`,
-        };
-        setMessages((prev) => [...prev, toolMsg]);
-        await handleToolExecution(tool);
-      }
+        if (response.toolRequest) {
+          const tool = response.toolRequest;
+          const toolMsg = {
+            id: `tool-${Date.now()}`,
+            role: "assistant",
+            content: `Requesting "${tool.title}" as a ${
+              tool.mediaType === "tv" ? "TV Show" : "Movie"
+            } (${tool.seasons && tool.seasons.length ? tool.seasons.join(", ") : "full"} seasons) now...`,
+          };
+          setMessages((prev) => [...prev, toolMsg]);
+          await handleToolExecution(tool);
+        }
     } catch (error) {
       setMessages((prev) => [
         ...prev,

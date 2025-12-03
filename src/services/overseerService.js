@@ -4,7 +4,9 @@ function normalizeBaseUrl(url) {
 
 function buildProxiedUrl(baseUrl, endpoint, useProxy, proxyUrl) {
   const target = `${normalizeBaseUrl(baseUrl)}${endpoint}`;
-  const proxied = useProxy ? `${proxyUrl}${target}` : target;
+  const proxied = useProxy
+    ? `${proxyUrl}${encodeURIComponent(target)}`
+    : target;
   return { targetUrl: target, finalUrl: proxied };
 }
 
@@ -18,12 +20,12 @@ export async function testConnection(settings) {
   );
 
   try {
-    const response = await fetch(finalUrl, {
-      headers: {
-        accept: "application/json",
-        authorization: overseerrApiKey ? `Bearer ${overseerrApiKey}` : undefined,
-      },
-    });
+    const headers = { accept: "application/json" };
+    if (overseerrApiKey) {
+      headers.authorization = `Bearer ${overseerrApiKey}`;
+    }
+
+    const response = await fetch(finalUrl, { headers });
     if (!response.ok) {
       return {
         ok: false,
@@ -55,17 +57,26 @@ export async function submitRequest(settings, toolPayload) {
     mediaType: toolPayload.mediaType,
     mediaId: toolPayload.mediaId || 0,
     title: toolPayload.title,
-    seasons: toolPayload.seasons,
   };
 
+  if (toolPayload.mediaType === "tv") {
+    body.seasons = Array.isArray(toolPayload.seasons)
+      ? toolPayload.seasons
+      : [];
+  }
+
   try {
+    const headers = {
+      "content-type": "application/json",
+      accept: "application/json",
+    };
+    if (overseerrApiKey) {
+      headers.authorization = `Bearer ${overseerrApiKey}`;
+    }
+
     const response = await fetch(finalUrl, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        accept: "application/json",
-        authorization: overseerrApiKey ? `Bearer ${overseerrApiKey}` : undefined,
-      },
+      headers,
       body: JSON.stringify(body),
     });
 

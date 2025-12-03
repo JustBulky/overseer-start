@@ -80,7 +80,7 @@ export async function generateAssistantResponse({ messages }) {
     title: chosenTitle,
     mediaType,
     mediaId: Date.now(),
-    seasons: seasons ? seasons.join(",") : "all",
+    seasons: seasons || [],
   };
   reply.tokenDelta = estimateTokens(reply.reply + userText);
   return reply;
